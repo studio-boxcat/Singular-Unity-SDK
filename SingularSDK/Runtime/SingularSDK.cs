@@ -23,9 +23,6 @@ namespace Singular
         public string SingularAPISecret = "<YourAPISecret>";
         public bool   InitializeOnAwake = true;
         
-        public bool enableLogging = true;
-        public int logLevel       = 3;
-        
         private static SingularSDK instance = null;
         public static bool Initialized { get; private set; } = false;
         
@@ -100,10 +97,6 @@ namespace Singular
         // The Singular SDK is initialized here
         void Awake()
         {
-            // init logger - matches native layer logging levels
-            SingularUnityLogger.EnableLogging(enableLogging);
-            SingularUnityLogger.SetLogLevel(logLevel);
-            
             SingularUnityLogger.LogDebug(string.Format("SingularSDK Awake, InitializeOnAwake={0}", InitializeOnAwake));
 
             if (Application.isEditor)
@@ -185,8 +178,14 @@ namespace Singular
         config.SetValue("openUri", openUri);
         config.SetValue("ddlTimeoutSec", instance.ddlTimeoutSec);
         config.SetValue("enableDeferredDeepLinks", enableDeferredDeepLinks);
-        config.SetValue("enableLogging", instance.enableLogging);
-        config.SetValue("logLevel", instance.logLevel);
+        config.SetValue("enableLogging", true);
+        const int logLevel =
+#if DEBUG
+            3; // DEBUG
+#else
+            6; // ERROR
+#endif
+        config.SetValue("logLevel", logLevel);
         if (SingularSDK.fcmDeviceToken != null){
             config.SetValue("fcmDeviceToken", SingularSDK.fcmDeviceToken);
         }
