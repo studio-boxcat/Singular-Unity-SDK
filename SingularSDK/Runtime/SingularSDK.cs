@@ -99,11 +99,6 @@ namespace Singular
         {
             SingularUnityLogger.LogDebug(string.Format("SingularSDK Awake, InitializeOnAwake={0}", InitializeOnAwake));
 
-            if (Application.isEditor)
-            {
-                return;
-            }
-
             if (instance)
                 return;
 
@@ -136,6 +131,7 @@ namespace Singular
 
             if (Application.isEditor)
             {
+                Initialized = true;
                 return;
             }
 
