@@ -1,3 +1,4 @@
+#define SINGULAR_SDK_IAP_ENABLED
 using System;
 using System.Collections;
 using System.Collections.Generic;
