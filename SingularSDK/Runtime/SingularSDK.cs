@@ -1195,15 +1195,7 @@ namespace Singular
 
         var transactionData = new Dictionary<string, object>();
 
-        if (product.definition != null) {
-            transactionData["pk"] = product.definition.id;
-
-#if UNITY_2017_2_OR_NEWER
-            if (product.definition.payout != null) {
-                transactionData["pq"] = product.definition.payout.quantity;
-            }
-#endif
-        }
+        transactionData["pk"] = product.definition.id;
 
         if (product.metadata != null) {
             transactionData["pn"] = product.metadata.localizedTitle;
@@ -1271,10 +1263,8 @@ namespace Singular
             transactionData["receipt_signature"] = values["signature"];
         }
 
-        if (product.definition != null) {
-            transactionData["pk"] = product.definition.id;
-        }
-	
+        transactionData["pk"] = product.definition.id;
+
 	// this string manipulation is done in order to deal with problematic descaping on server and validating receipts.
 	// for more information: https://singularlabs.atlassian.net/browse/SDKDEV-88
         string receipt = Regex.Replace(product.receipt, @"\\+n", "");
