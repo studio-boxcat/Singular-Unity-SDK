@@ -30,7 +30,7 @@ namespace Singular
         public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION      = "5.4.1-KIDS";
+        private const string UNITY_VERSION      = "5.5.1-KIDS";
         
         // ios-only:
         [Obsolete]
