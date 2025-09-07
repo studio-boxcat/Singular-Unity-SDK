@@ -49,8 +49,6 @@ namespace Singular
         private static string imei;
         #if UNITY_ANDROID
             static AndroidJavaClass  singular;
-            static AndroidJavaClass  jclass;
-            static AndroidJavaObject activity;
             static AndroidJavaClass  jniSingularUnityBridge;
 
             static bool status = false;
@@ -233,8 +231,6 @@ namespace Singular
 
         InitAndroidJavaClasses();
 
-        activity = jclass.GetStatic<AndroidJavaObject>("currentActivity");
-
         jniSingularUnityBridge.CallStatic("init", config.ToJsonString());
 
         singular.CallStatic("setWrapperNameAndVersion", UNITY_WRAPPER_NAME, UNITY_VERSION);
@@ -243,10 +239,6 @@ namespace Singular
     private static void InitAndroidJavaClasses() {
         if (singular == null) {
             singular = new AndroidJavaClass("com.singular.sdk.Singular");
-        }
-
-        if (jclass == null) {
-            jclass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
         }
 
         if (jniSingularUnityBridge == null) {
