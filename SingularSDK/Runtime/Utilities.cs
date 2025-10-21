@@ -1,6 +1,9 @@
+using System;
+using System.Globalization;
+
 namespace Singular
 {
-    public class Utilities
+    public static class Utilities
     {
         public static string[][] DelimitedStringsArrayToArrayOfArrayOfString(string[] delimitedStringsArray, char delimiter)
         {
@@ -18,5 +21,16 @@ namespace Singular
             
             return arrayOfArrayOfString;
         }
+        
+        public static string ToCultureInvariantString(object value)
+        {
+            if (value is IFormattable formattable)
+            {
+                return formattable.ToString(null, CultureInfo.InvariantCulture);
+            }
+            
+            return Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
+        }
+
     }
 }
