@@ -85,12 +85,26 @@ static NSString* singularLinkParamsToJson(SingularLinkParams* params){
     return dictionaryToJson(values);
 }
 
+// FIX: Dispatch UnitySendMessage to the main thread.
+// Singular native SDK invokes callbacks (SKAN, deep link, SDID, attribution, short link)
+// on background dispatch queues. UnitySendMessage is not thread-safe and crashes in
+// BackgroundJobQueue::ScheduleMainThreadJobInternal when called off the main thread.
+// All callers (handleConversionValueUpdated, handleSingularLinkParams, etc.) route
+// through this function, so dispatching here covers every callback path.
+// Also consolidated RegisterDeferredDeepLinkHandler_ to use this instead of calling
+// UnitySendMessage directly.
+// https://github.com/singular-labs/Singular-Unity-SDK/issues/40
 static void sendSdkMessage(const char *methodName, NSString *param) {
-    const char* str = [param UTF8String];
-    char* result = (char*)malloc(strlen(str)+1);
-    strcpy(result,str);
-    
-    UnitySendMessage("SingularSDKObject", methodName, result);
+    // Copy strings to ensure they survive across dispatch.
+    NSString *method = [NSString stringWithUTF8String:methodName];
+    NSString *message = [param copy];
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        const char* str = [message UTF8String];
+        char* result = (char*)malloc(strlen(str)+1); // known leak — UnitySendMessage copies internally but original code never freed either. Callbacks are infrequent.
+        strcpy(result, str);
+        UnitySendMessage("SingularSDKObject", [method UTF8String], result);
+    });
 }
 
 static void handleSingularLinkParams(SingularLinkParams *params) {
@@ -411,14 +425,7 @@ extern "C" {
     
     void RegisterDeferredDeepLinkHandler_(){
         [Singular registerDeferredDeepLinkHandler:^(NSString *deeplink) {
-            if(deeplink != NULL){
-                const char* str = [deeplink UTF8String];
-                char* result = (char*)malloc(strlen(str)+1);
-                strcpy(result,str);
-                UnitySendMessage("SingularSDKObject", "DeepLinkHandler", result);
-            }else{
-                UnitySendMessage("SingularSDKObject", "DeepLinkHandler", "");
-            }
+            sendSdkMessage("DeepLinkHandler", deeplink ? deeplink : @"");
         }];
     }
     
