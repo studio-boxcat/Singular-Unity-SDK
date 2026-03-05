@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using UnityEngine;
+using UnityEngine.Scripting;
 #if SINGULAR_SDK_IAP_ENABLED__IAP_4 || SINGULAR_SDK_IAP_ENABLED__IAP_5
 using UnityEngine.Purchasing;
 #endif // SINGULAR_SDK_IAP_ENABLED__IAP_4 || SINGULAR_SDK_IAP_ENABLED__IAP_5
@@ -28,7 +29,7 @@ namespace Singular
         public static bool Initialized { get; private set; } = false;
         
         private const string UNITY_WRAPPER_NAME = "Unity";
-        private const string UNITY_VERSION      = "5.6.0";
+        private const string UNITY_VERSION      = "5.7.0";
         
         #endregion // init properties
         
@@ -189,6 +190,15 @@ namespace Singular
             config.SetValue("pushNotificationLinkPath", Utilities.DelimitedStringsArrayToArrayOfArrayOfString(instance.pushNotificationsLinkPaths, '/'));
             config.SetValue("limitAdvertisingIdentifiers", instance.limitAdvertisingIdentifiers);
             config.SetValue("brandedDomains", instance.brandedDomains);
+            config.SetValue("enableLogging", true);
+            const int logLevel =
+#if DEBUG
+                3; // DEBUG
+#else
+                6; // ERROR
+#endif
+            config.SetValue("logLevel", logLevel);
+
 #if UNITY_ANDROID
         config.SetValue("facebookAppId", instance.facebookAppId);
         config.SetValue("customUserId", customUserId);
@@ -196,14 +206,6 @@ namespace Singular
         config.SetValue("openUri", openUri);
         config.SetValue("ddlTimeoutSec", instance.ddlTimeoutSec);
         config.SetValue("enableDeferredDeepLinks", enableDeferredDeepLinks);
-        config.SetValue("enableLogging", true);
-        const int logLevel =
-#if DEBUG
-            3; // DEBUG
-#else
-            6; // ERROR
-#endif
-        config.SetValue("logLevel", logLevel);
         if (SingularSDK.fcmDeviceToken != null)
         {
             config.SetValue("fcmDeviceToken", SingularSDK.fcmDeviceToken);
@@ -660,6 +662,11 @@ namespace Singular
             if (!Initialized)
                 return;
 
+            if (string.IsNullOrEmpty(name)) {
+                SingularUnityLogger.LogWarn("Event called with null or empty name");
+                return;
+            }
+
             if (!Application.isEditor)
             {
 #if UNITY_IOS
@@ -685,6 +692,15 @@ namespace Singular
         {
             if (!Initialized)
                 return;
+
+            if (string.IsNullOrEmpty(name)) {
+                SingularUnityLogger.LogWarn("Event called with null or empty name");
+                return;
+            }
+
+            if (args == null) {
+                args = new Dictionary<string, object>();
+            }
 
             if (!Application.isEditor)
             {
@@ -766,6 +782,11 @@ namespace Singular
             if (!Initialized)
                 return;
 
+            if (string.IsNullOrEmpty(name)) {
+                SingularUnityLogger.LogWarn("Event called with null or empty name");
+                return;
+            }
+
             if (!Application.isEditor)
             {
 #if UNITY_IOS || UNITY_ANDROID
@@ -775,6 +796,10 @@ namespace Singular
                 Dictionary<string, object> dict = new Dictionary<string, object>();
 
                 for (int i = 0; i < args.Length; i += 2) {
+                    if (args[i] == null) {
+                        SingularUnityLogger.LogWarn("Event argument key at index " + i + " is null, skipping this key-value pair.");
+                        continue;
+                    }
                     dict.Add(args[i].ToString(), args[i + 1]);
                 }
 
@@ -1482,6 +1507,11 @@ namespace Singular
             {
                 return;
             }
+
+            if (string.IsNullOrEmpty(eventName)) {
+                SingularUnityLogger.LogWarn("CustomRevenue called with null or empty eventName");
+                return;
+            }
 #if UNITY_IOS
         CustomRevenue_(eventName, currency, amount);
 #elif UNITY_ANDROID
@@ -1511,6 +1541,11 @@ namespace Singular
         {
             if (Application.isEditor)
             {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(eventName)) {
+                SingularUnityLogger.LogWarn("CustomRevenue called with null or empty eventName");
                 return;
             }
 #if UNITY_ANDROID
@@ -1544,6 +1579,11 @@ namespace Singular
         {
             if (Application.isEditor)
             {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(eventName)) {
+                SingularUnityLogger.LogWarn("CustomRevenue called with null or empty eventName");
                 return;
             }
 #if UNITY_IOS
@@ -1587,6 +1627,11 @@ namespace Singular
         {
             if (Application.isEditor)
             {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(eventName)) {
+                SingularUnityLogger.LogWarn("CustomRevenue called with null or empty eventName");
                 return;
             }
 
@@ -2014,12 +2059,14 @@ namespace Singular
             }
         }
 
+        [Preserve]
         private class SingularGlobalProperty
         {
-            public string Key { get; set; }
-            public string Value { get; set; }
-            public bool OverrideExisting { get; set; }
+            [Preserve] public string Key { get; set; }
+            [Preserve] public string Value { get; set; }
+            [Preserve] public bool OverrideExisting { get; set; }
 
+            [Preserve]
             public SingularGlobalProperty(string key, string value, bool overrideExisting)
             {
                 Key = key;
