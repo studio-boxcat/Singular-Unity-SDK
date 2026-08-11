@@ -52,8 +52,6 @@ namespace Singular
         #if UNITY_ANDROID
             static AndroidJavaClass  singular;
             static AndroidJavaClass  jniSingularUnityBridge;
-
-            static bool status = false;
         #endif
         #endregion //Android-only
         
@@ -673,7 +671,9 @@ namespace Singular
             SendEvent_(name);
 #elif UNITY_ANDROID
             if (singular != null) {
-                status = singular.CallStatic<bool>("isInitialized");
+                // isInitialized() is package-private in the native SDK (absent in newer versions) —
+                // Unity's reflection lookup falls back and coerces a raw Object to bool, throwing
+                // ClassCastException into the caller. The check bought nothing (result was discarded).
                 singular.CallStatic<bool>("event", name);
             }
 #endif
@@ -765,7 +765,7 @@ namespace Singular
 #elif UNITY_ANDROID
             AndroidJavaObject json = new AndroidJavaObject("org.json.JSONObject", JsonConvert.SerializeObject(args, Formatting.None));
             if (singular != null) {
-                status = singular.CallStatic<bool>("eventJSON", name, json);
+                singular.CallStatic<bool>("eventJSON", name, json);
             }
 #endif
             }
