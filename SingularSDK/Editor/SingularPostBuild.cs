@@ -18,22 +18,11 @@ namespace Singular.Editor {
 
 public class SingularPostBuild
 {
-    [PostProcessBuildAttribute(1)]
-    static void OnPostProcessBuild(BuildTarget target, string pathToBuiltProject)
+    // Sequenced by MeowTower.Editor.BuildPostProcessor (see BuildPostProcessor.IOS.cs) instead of a
+    // [PostProcessBuild] hook, and it edits the caller's PBXProject rather than re-reading the file:
+    // one owner reads and writes the project, so no step can silently overwrite another's edits.
+    public static void AddiOSDependencies(PBXProject pbxProject)
     {
-        if (target == BuildTarget.iOS)
-        {
-            Debug.Log("Start Xcode project related configuration of SDK......");
-            AddiOSDependencies(pathToBuiltProject);
-        }
-    }
-
-    static void AddiOSDependencies(string pathToBuiltProject)
-    {
-        string projectPath = pathToBuiltProject + "/Unity-iPhone.xcodeproj/project.pbxproj";
-        PBXProject pbxProject = new PBXProject();
-        pbxProject.ReadFromFile(projectPath);
-
         #if UNITY_2019_3_OR_NEWER
         string targetGuid = pbxProject.GetUnityFrameworkTargetGuid();
         #else
@@ -51,9 +40,6 @@ public class SingularPostBuild
         // Add .dylib
         pbxProject.AddFileToBuild(targetGuid, pbxProject.AddFile("usr/lib/libsqlite3.0.tbd", "Frameworks/libsqlite3.0.tbd", PBXSourceTree.Sdk));
         pbxProject.AddFileToBuild(targetGuid, pbxProject.AddFile("usr/lib/libz.tbd", "Frameworks/libz.tbd", PBXSourceTree.Sdk));
-
-        // Save the changes to Xcode project file.
-        pbxProject.WriteToFile(projectPath);
     }
 }
 
