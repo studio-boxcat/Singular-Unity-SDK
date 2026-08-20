@@ -671,9 +671,10 @@ namespace Singular
             SendEvent_(name);
 #elif UNITY_ANDROID
             if (singular != null) {
-                // isInitialized() is package-private in the native SDK (absent in newer versions) —
-                // Unity's reflection lookup falls back and coerces a raw Object to bool, throwing
-                // ClassCastException into the caller. The check bought nothing (result was discarded).
+                // Do not restore upstream's isInitialized() pre-check: it is private in the native
+                // SDK, and invoking a private method over JNI trips a device-side fault that unwinds
+                // the caller. See `crash-incident-singular-jni.md` (meow-tower). Its result was
+                // discarded anyway.
                 singular.CallStatic<bool>("event", name);
             }
 #endif
