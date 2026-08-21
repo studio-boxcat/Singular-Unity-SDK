@@ -2,7 +2,7 @@ fileFormatVersion: 2
 guid: 8f70a53d317a94375b81fa576247b4b4
 PluginImporter:
   externalObjects: {}
-  serializedVersion: 2
+  serializedVersion: 3
   iconMap: {}
   executionOrder: {}
   defineConstraints: []
@@ -11,9 +11,7 @@ PluginImporter:
   isExplicitlyReferenced: 0
   validateReferences: 1
   platformData:
-  - first:
-      : Any
-    second:
+    Any:
       enabled: 0
       settings:
         Exclude Android: 1
@@ -25,25 +23,14 @@ PluginImporter:
         Exclude Win64: 1
         Exclude iOS: 0
         Exclude tvOS: 1
-  - first:
-      Any: 
-    second:
-      enabled: 0
-      settings: {}
-  - first:
-      Editor: Editor
-    second:
+    Editor:
       enabled: 0
       settings:
         DefaultValueInitialized: true
-  - first:
-      iPhone: iOS
-    second:
+    iOS:
       enabled: 1
       settings: {}
-  - first:
-      tvOS: tvOS
-    second:
+    tvOS:
       enabled: 0
       settings: {}
   userData: 
